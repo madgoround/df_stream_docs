@@ -3362,7 +3362,7 @@ globalThis["mermaid"] = globalThis.__esbuild_esm_mermaid_nm["mermaid"].default;
       <span>1:1:1:1 정책</span><span class="nav-num">03</span>
     </div>
     <div class="nav-item" onclick="showSection(3)">
-      <span>DB Single Source</span><span class="nav-num">04</span>
+      <span>DB SSoT / KEP</span><span class="nav-num">04</span>
     </div>
     <div class="nav-item" onclick="showSection(4)">
       <span>Quick Deploy</span><span class="nav-num">05</span>
@@ -3566,6 +3566,77 @@ sequenceDiagram
     API->>DB: 6. 스트림 상태 업데이트 (active)
     API-->>U: 배포 완료
     Note over U,KC: ❌ 금지: Benthos/Kafka/SR 직접 조작
+        </div>
+      </div>
+    </div>
+
+    <!-- 4-1 KEPServer 예외 -->
+    <div class="section-header" style="margin-top:40px">
+      <div class="section-label">SSoT Exception</div>
+      <div class="section-title">4-1. DB SSoT 예외 — KEPServerEX 노드 관리</div>
+      <div class="section-desc">KEPServer 노드(Channel/Device/Tag)는 DB SSoT 정책의 <strong>명시적 예외</strong>입니다. KEPServer가 원본이고, DB는 캐시(미러)입니다.</div>
+    </div>
+    <div class="info-block">
+      <strong>역방향 원칙:</strong> KEPServer 노드는 KEP Config API를 먼저 거친 후 DB에 반영합니다. KEP 실패 시 DB 변경 없음으로 정합성을 보장합니다.
+    </div>
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-orange"></div>
+        <span class="diagram-card-title">KEPServer 노드 생성 / 동기화 시퀀스</span>
+        <span class="diagram-card-subtitle">KEP 먼저 → DB 반영 (역방향)</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+sequenceDiagram
+    participant U as 사용자 (UI)
+    participant API as NestJS API
+    participant KEP as KEPServerEX Config API
+    participant DB as DF-Stream DB
+    Note over U,DB: ✅ KEPServer 노드: 외부 서비스를 먼저 거친다 (역방향)
+    U->>API: Tag 생성 요청
+    API->>KEP: 1. Config API POST (KEP에 먼저 생성)
+    KEP-->>API: 생성 성공
+    API->>DB: 2. opc_server_node_mt INSERT (DB에 반영)
+    API-->>U: 완료
+    Note over U,DB: KEP 실패 시 → DB 변경 없음 (정합성 보장)
+    U->>API: Tag 생성 요청
+    API->>KEP: 1. Config API POST
+    KEP-->>API: ❌ 409 Conflict (이미 존재)
+    API-->>U: 에러 반환 (DB 변경 없음)
+    Note over U,DB: 현장 직접 변경 → 전체 동기화로 DB 갱신
+    U->>API: [전체 동기화] 클릭
+    API->>KEP: Config API GET (전체 트리 읽기)
+    KEP-->>API: Channel/Device/Tag 전체 목록
+    API->>DB: opc_server_node_mt UPSERT (KEP 상태로 갱신)
+    API-->>U: 동기화 완료
+        </div>
+      </div>
+    </div>
+    <div class="diagram-card" style="margin-top:20px">
+      <div class="diagram-card-header">
+        <div class="dot dot-green"></div>
+        <span class="diagram-card-title">SSoT 적용 범위 vs 예외</span>
+        <span class="diagram-card-subtitle">DB SSoT / KEPServer 예외 구분</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+graph TB
+    subgraph SSOT["DB SSoT 적용 (DB가 원본)"]
+        direction LR
+        S1["스트림/파이프라인"]
+        S2["Kafka 토픽/커넥터"]
+        S3["Schema Registry Subject"]
+        S4["연결 설정"]
+        S5["표준 데이터"]
+    end
+    subgraph EXCEPT["SSoT 예외 (외부 시스템이 원본)"]
+        direction LR
+        E1["KEPServer 노드 Channel/Device/Tag"]
+    end
+    SSOT -->|"DB 먼저 → 외부 반영"| EXT1["Benthos/Kafka/SR"]
+    EXCEPT -->|"KEP 먼저 → DB 반영 (역방향)"| EXT2["KEPServerEX"]
+    style SSOT fill:#e8f5e9,stroke:#4caf50
+    style EXCEPT fill:#fff3e0,stroke:#ff9800
         </div>
       </div>
     </div>
