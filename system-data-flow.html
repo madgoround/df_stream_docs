@@ -3417,7 +3417,7 @@ graph TB
         AUTH["NestJS Auth<br/>apps/auth :3002"]
     end
     subgraph DATABASE["데이터베이스 (dataforge)"]
-        DFP["df_package 스키마<br/>인프라 마스터 데이터<br/>(43 테이블)"]
+        DFP["df_package 스키마<br/>인프라 마스터 + 표준 사전<br/>(47 테이블)"]
         DFA["df_app 스키마<br/>앱 설정 데이터<br/>(12 테이블)"]
     end
     subgraph INFRA["데이터 수집 인프라"]
@@ -3535,11 +3535,17 @@ graph LR
   <section class="section" id="sec-3">
     <div class="section-header">
       <div class="section-label">Data Flow</div>
-      <div class="section-title">DB Single Source of Truth — 설정 흐름</div>
-      <div class="section-desc">모든 인프라 설정은 반드시 DF-Stream DB를 거쳐야 하며, 외부 서비스 직접 조작은 금지됩니다.</div>
+      <div class="section-title">두 개의 Single Source of Truth</div>
+      <div class="section-desc">인프라 설정과 데이터 정의, 두 가지 SSoT 원칙으로 시스템을 통제합니다.</div>
     </div>
-    <div class="warn-block">
-      <strong>❌ 금지:</strong> Benthos, Kafka, Schema Registry를 직접 조작하는 것은 허용되지 않습니다. <strong>반드시 DB를 먼저 거쳐야 합니다.</strong>
+    <div class="info-block">
+      <strong>원칙 1 — 인프라 SSoT:</strong> 모든 파이프라인 설정의 원본은 DF-Stream DB에 있다. 외부 서비스(Benthos, Kafka, SR)는 DB의 내용을 반영한 결과물일 뿐이다.
+    </div>
+    <div class="info-block" style="margin-top:12px;">
+      <strong>원칙 2 — 의미론 SSoT:</strong> 모든 데이터의 정의와 명칭의 원본은 표준 사전(data_standard)에 있다. 각 엔티티와 코드 테이블은 표준 사전의 정의를 참조할 뿐이다.
+    </div>
+    <div class="warn-block" style="margin-top:12px;">
+      <strong>❌ 금지:</strong> Benthos/Kafka/SR 직접 조작 금지 | 새 코드 테이블(_ct) DDL 생성 금지 → 표준 사전 카테고리 추가 | 태그에 자유 텍스트로 속성 분류 금지
     </div>
     <div class="diagram-card">
       <div class="diagram-card-header">
@@ -3624,21 +3630,28 @@ sequenceDiagram
       <div class="diagram-body">
         <div class="mermaid">
 graph TB
-    subgraph SSOT["DB SSoT 적용 (DB가 원본)"]
+    subgraph SSOT1["원칙 1: 인프라 SSoT (DB가 원본)"]
         direction LR
         S1["스트림/파이프라인"]
         S2["Kafka 토픽/커넥터"]
         S3["Schema Registry Subject"]
         S4["연결 설정"]
-        S5["표준 데이터"]
+    end
+    subgraph SSOT2["원칙 2: 의미론 SSoT (표준 사전이 원본)"]
+        direction LR
+        S5["측정/동작/상태 유형"]
+        S6["설비 유형 (Class)"]
+        S7["도메인 규칙 (단위/범위)"]
     end
     subgraph EXCEPT["SSoT 예외 (외부 시스템이 원본)"]
         direction LR
         E1["KEPServer 노드 Channel/Device/Tag"]
     end
-    SSOT -->|"DB 먼저 → 외부 반영"| EXT1["Benthos/Kafka/SR"]
+    SSOT1 -->|"DB 먼저 → 외부 반영"| EXT1["Benthos/Kafka/SR"]
+    SSOT2 -->|"표준 사전 → 각 엔티티 참조"| EXT3["factory/equipment/device/tag"]
     EXCEPT -->|"KEP 먼저 → DB 반영 (역방향)"| EXT2["KEPServerEX"]
-    style SSOT fill:#e8f5e9,stroke:#4caf50
+    style SSOT1 fill:#e8f5e9,stroke:#4caf50
+    style SSOT2 fill:#e3f2fd,stroke:#2196f3
     style EXCEPT fill:#fff3e0,stroke:#ff9800
         </div>
       </div>
@@ -3760,7 +3773,7 @@ graph TB
       <div class="diagram-card-header">
         <div class="dot dot-purple"></div>
         <span class="diagram-card-title">df_package 스키마 ERD</span>
-        <span class="diagram-card-subtitle">43 테이블 · 인프라 마스터 데이터</span>
+        <span class="diagram-card-subtitle">47 테이블 · 인프라 마스터 + 표준 사전</span>
       </div>
       <div class="diagram-body">
         <div class="mermaid">
@@ -3796,9 +3809,33 @@ erDiagram
     factory_mt {
         bigint factory_uid PK
         bigint business_place_uid FK
+        bigint standard_term_uid FK "설비유형 참조"
         varchar factory_nm
         varchar factory_cd
     }
+    equipment_mt {
+        bigint equipment_uid PK
+        bigint factory_uid FK
+        bigint standard_term_uid FK "설비유형 참조"
+        varchar equipment_nm
+        varchar equipment_cd
+    }
+    device_mt {
+        bigint device_uid PK
+        bigint factory_uid FK
+        bigint standard_term_uid FK "장치유형 참조"
+        varchar device_nm
+        varchar device_type
+    }
+    data_standard_term_mt {
+        bigint term_uid PK
+        bigint category_uid FK
+        varchar term_cd
+        varchar term_nm
+    }
+    factory_mt }o--o| data_standard_term_mt : "유형 참조"
+    equipment_mt }o--o| data_standard_term_mt : "유형 참조"
+    device_mt }o--o| data_standard_term_mt : "유형 참조"
     opc_server_mt {
         bigint opc_server_uid PK
         bigint business_place_uid FK
@@ -3906,28 +3943,49 @@ flowchart TD
     <div class="section-header">
       <div class="section-label">Naming</div>
       <div class="section-title">네이밍 표준 매핑</div>
-      <div class="section-desc">법인(css) → 사업장(changwon) → 공장(srl) 계층에서 파생되는 Stream/Topic/Connector/DB 네이밍 규칙</div>
+      <div class="section-desc">구분자: dot(.) = 계층, hyphen(-) = 레벨 내 복합어. 법인·사업장·공장·소스·데이터셋에서 파생.</div>
+    </div>
+    <div class="info-block">
+      <strong>패턴:</strong> <code>css.{사업장}-{공장}.{소스시스템}-{데이터셋}</code> — 예: <code>css.changwon-fp.mes-heat-treat-extract-result</code>
     </div>
     <div class="diagram-card">
       <div class="diagram-card-header">
         <div class="dot dot-green"></div>
         <span class="diagram-card-title">계층별 네이밍 규칙 매핑</span>
-        <span class="diagram-card-subtitle">css.changwon_srl 예시</span>
+        <span class="diagram-card-subtitle">태그 수집 (css.changwon-srl.tag) 예시</span>
       </div>
       <div class="diagram-body">
         <div class="mermaid">
 graph TD
     CORP["법인 (css)"] --> BP["사업장 (changwon)"]
     BP --> FACTORY["공장 (srl)"]
-    FACTORY --> STREAM["Stream ID<br/>changwon-srl-kepserver1-01"]
-    FACTORY --> TOPIC["Kafka Topic<br/>css.changwon_srl.tag"]
-    FACTORY --> CONNECTOR["Connector<br/>css.changwon_srl.tag.sink"]
-    FACTORY --> CG["Consumer Group<br/>connect-css.changwon_srl.tag.sink"]
-    FACTORY --> SCHEMA["DB Schema<br/>changwon_srl"]
-    FACTORY --> TABLE["DB Table<br/>changwon_srl.tag_rt"]
-    TOPIC --> DLQ["DLQ Topic<br/>css.changwon_srl.tag.error"]
-    FACTORY --> OPC_CH["OPC Channel<br/>changwon_srl_01"]
+    FACTORY --> STREAM["Stream ID = Topic<br/><strong>css.changwon-srl.tag</strong>"]
+    STREAM --> CONNECTOR["Connector<br/>css.changwon-srl.tag<strong>.sink</strong>"]
+    STREAM --> CG["Consumer Group<br/>css.changwon-srl.tag<strong>.timescale</strong>"]
+    STREAM --> DLQ["DLQ Topic<br/>css.changwon-srl.tag<strong>.error</strong>"]
+    FACTORY --> SCHEMA_DB["DB Schema<br/><strong>changwon_srl</strong>"]
+    SCHEMA_DB --> TABLE["DB Table<br/>changwon_srl.<strong>tag_rt</strong>"]
+    STREAM --> SR_SUBJ["Schema Subject<br/><strong>css.changwon_srl.tag</strong>"]
         </div>
+      </div>
+    </div>
+    <div class="diagram-card" style="margin-top:20px">
+      <div class="diagram-card-header">
+        <div class="dot dot-orange"></div>
+        <span class="diagram-card-title">운영 데이터셋 네이밍 예시</span>
+        <span class="diagram-card-subtitle">MES 열처리 실적 (css.changwon-fp.mes-heat-treat)</span>
+      </div>
+      <div class="diagram-body">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">리소스</th><th style="padding:8px;text-align:left;">패턴</th><th style="padding:8px;text-align:left;">예시</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Stream ID / Topic</td><td style="padding:8px;font-family:monospace;font-size:12px;">css.{bp}-{factory}.{src}-{dataset}</td><td style="padding:8px;font-size:12px;">css.changwon-fp.mes-heat-treat-extract-result</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Connector</td><td style="padding:8px;font-family:monospace;font-size:12px;">{topic}.sink</td><td style="padding:8px;font-size:12px;">css.changwon-fp.mes-heat-treat-extract-result.sink</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Schema Subject</td><td style="padding:8px;font-family:monospace;font-size:12px;">css.{bp}_{factory}.{src}_{dataset}</td><td style="padding:8px;font-size:12px;">css.changwon_fp.mes_heat_treat_extract_result</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">DB Schema</td><td style="padding:8px;font-family:monospace;font-size:12px;">{bp}_{factory}</td><td style="padding:8px;font-size:12px;">changwon_fp</td></tr>
+            <tr><td style="padding:8px;">DB Table</td><td style="padding:8px;font-family:monospace;font-size:12px;">{src}_{dataset}_tt</td><td style="padding:8px;font-size:12px;">mes_heat_treat_extract_result_tt</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -3950,6 +4008,7 @@ graph TD
 graph TB
     subgraph SETTINGS["설정 관리"]
         SD["표준 데이터 관리<br/>법인→사업장→공장→설비→디바이스"]
+        DST["표준 사전 관리<br/>단어/용어/도메인/매핑규칙<br/>(ISA-95 Class/Instance)"]
         MH["메시지 허브 설정<br/>Kafka 클러스터/Connect/SR"]
         OPC["OPC Server 설정<br/>서버 등록 + Config API"]
         DS["데이터소스 관리<br/>RDB/REST API Source/Sink"]
@@ -3966,6 +4025,7 @@ graph TB
         KAFKA_UI["메시지 허브<br/>토픽/컨슈머/브로커"]
     end
     SD --> WIZARD
+    DST --> TAGS
     MH --> WIZARD
     OPC --> WIZARD
     DS --> WIZARD
