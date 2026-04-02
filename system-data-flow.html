@@ -4883,7 +4883,7 @@ graph TB
       <div class="diagram-body">
         <div class="mermaid">
 graph TB
-  DS["표준 사전<br/>(Definition Layer)<br/>단어 → 용어 → 도메인"]
+  DS["표준 사전<br/>(Definition Layer)<br/>단어 - 용어 - 도메인"]
 
   DS -->|"standard_term_uid FK"| F["factory_mt<br/>공장"]
   DS -->|"standard_term_uid FK"| E["equipment_mt<br/>설비"]
@@ -4993,7 +4993,7 @@ graph TB
         </div>
         <div class="mermaid">
 graph TB
-  subgraph CLASS["표준 사전 (Class — 보통명사)"]
+  subgraph CLASS["표준 사전 : Class, 보통명사"]
     EC["equipment_class<br/>가열로, 압연기, 크레인"]
     DC["device_class<br/>PLC, 온도센서, 압력계"]
     MS["measurement<br/>온도, 압력, 유량, 전류"]
@@ -5002,7 +5002,7 @@ graph TB
     VT["value_type<br/>실측, 목표, 상한"]
   end
 
-  subgraph INSTANCE["자산 대장 (Instance — 고유명사)"]
+  subgraph INSTANCE["자산 대장 : Instance, 고유명사"]
     FM["factory_mt<br/>소형압연"]
     EM["equipment_mt<br/>FCE_001"]
     DM["device_mt<br/>PLC_Z1_01"]
