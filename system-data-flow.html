@@ -3388,6 +3388,9 @@ globalThis["mermaid"] = globalThis.__esbuild_esm_mermaid_nm["mermaid"].default;
     <div class="nav-item" onclick="showSection(11)">
       <span>용어 사전</span><span class="nav-num">12</span>
     </div>
+    <div class="nav-item" onclick="showSection(12)">
+      <span>표준 사전</span><span class="nav-num">13</span>
+    </div>
   </div>
 </nav>
 
@@ -4328,6 +4331,700 @@ graph LR
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 13 표준 사전 -->
+  <section class="section" id="sec-12">
+    <div class="section-header">
+      <div class="section-label">Data Standard</div>
+      <div class="section-title">표준 사전 (Data Standard Dictionary)</div>
+      <div class="section-desc">표준 사전의 원리, ISA-95 적용 범위, 표준 사전의 정의 및 범위를 체계적으로 정리합니다.</div>
+    </div>
+
+    <!-- 1. 표준 사전이란 -->
+    <div class="info-block">
+      <strong>의미론 SSoT (Single Source of Truth)</strong> &mdash;
+      표준 사전(<code>data_standard</code>)은 DF-Stream 플랫폼 내 <strong>모든 데이터의 명칭과 정의의 단일 원본</strong>이다.
+      각 엔티티는 <code>standard_term_uid</code> FK를 통해 표준 사전의 정의를 <strong>참조</strong>할 뿐이다.
+    </div>
+
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-blue"></div>
+        <span class="diagram-card-title">표준 사전이 필요한 이유</span>
+        <span class="diagram-card-subtitle">Why Data Standard?</span>
+      </div>
+      <div class="diagram-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #4f8ef7;">
+            <strong style="color:#4f8ef7;">AI 에이전트 분석 대비</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">"온도", "Temperature", "TEMP", "TT"가 모두 같은 개념임을 시스템이 보장</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #a78bfa;">
+            <strong style="color:#a78bfa;">크로스 시스템 통합</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">SAP/MES/ERP 등 외부 코드를 내부 표준 용어에 매핑하여 통합 조회</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #10b981;">
+            <strong style="color:#10b981;">데이터 품질 강제</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">도메인(타입, 단위, 범위)으로 이상값 탐지 기준을 메타데이터에서 자동 도출</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #f59e0b;">
+            <strong style="color:#f59e0b;">명칭 일관성</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">동일 개념에 대해 한글명/영문명/약어가 시스템 전체에서 일관</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 3계층 구조 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-purple"></div>
+        <span class="diagram-card-title">3계층 구조: 단어 → 용어 → 도메인</span>
+        <span class="diagram-card-subtitle">NIA 데이터 표준화 가이드 기반</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+graph TB
+  subgraph Layer1["Layer 1: 단어 (Word)"]
+    W1["온도"]
+    W2["압력"]
+    W3["모터"]
+    W4["전류"]
+    W5["설정"]
+    W6["상한"]
+  end
+
+  subgraph Layer2["Layer 2: 용어 (Term)"]
+    T1["온도<br/>word: 온도"]
+    T2["온도_설정값<br/>word: 온도+설정+값"]
+    T3["모터_전류<br/>word: 모터+전류"]
+  end
+
+  subgraph Layer3["Layer 3: 도메인 (Domain)"]
+    D1["온도_도메인<br/>FLOAT, ℃, -50~2000"]
+    D2["압력_도메인<br/>FLOAT, MPa, 0~100"]
+    D3["전류_도메인<br/>FLOAT, A, 0~1000"]
+  end
+
+  W1 --> T1
+  W1 & W5 --> T2
+  W3 & W4 --> T3
+  D1 --> T1
+  D1 --> T2
+  D3 --> T3
+
+  style Layer1 fill:#1a2035,stroke:#4f8ef7,color:#dde2f0
+  style Layer2 fill:#1a2035,stroke:#a78bfa,color:#dde2f0
+  style Layer3 fill:#1a2035,stroke:#10b981,color:#dde2f0
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 정의 전파 모델 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-teal"></div>
+        <span class="diagram-card-title">정의 전파 모델</span>
+        <span class="diagram-card-subtitle">단방향 전파 — 표준 사전 → 각 엔티티</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+graph TB
+  DS["표준 사전<br/>(Definition Layer)<br/>단어 → 용어 → 도메인"]
+
+  DS -->|"standard_term_uid FK"| F["factory_mt<br/>공장"]
+  DS -->|"standard_term_uid FK"| E["equipment_mt<br/>설비"]
+  DS -->|"standard_term_uid FK"| DEV["device_mt<br/>디바이스"]
+  DS -->|"data_standard_term_uid FK"| OPC["opc_server_node_mt<br/>OPC 노드 (태그)"]
+  DS -.->|"향후 통합"| AT["attribute_type_ct<br/>속성 유형 코드"]
+
+  OPC --> V["v_tag_metadata<br/>태그 메타데이터 뷰"]
+
+  style DS fill:#1e2a45,stroke:#4f8ef7,color:#dde2f0
+  style V fill:#1a2035,stroke:#10b981,color:#dde2f0
+        </div>
+        <div class="info-block" style="margin-top:16px;">
+          <strong>핵심 규칙:</strong> 전파 방향은 항상 <strong>단방향</strong>이다.
+          각 엔티티는 표준 사전의 정의를 참조하되, 역방향으로 정의를 변경하지 않는다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 분류 체계 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-orange"></div>
+        <span class="diagram-card-title">분류 체계 (Category)</span>
+        <span class="diagram-card-subtitle">data_standard_category_ct</span>
+      </div>
+      <div class="diagram-body" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;">
+              <th style="padding:10px 12px;color:var(--accent);">category_cd</th>
+              <th style="padding:10px 12px;">category_nm</th>
+              <th style="padding:10px 12px;">성격</th>
+              <th style="padding:10px 12px;text-align:right;">현재 term 건수</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#f59e0b;">factory</td>
+              <td style="padding:8px 12px;">공장</td>
+              <td style="padding:8px 12px;"><span style="background:#f59e0b22;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px;">자산 대장 (Instance)</span></td>
+              <td style="padding:8px 12px;text-align:right;">18</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#f59e0b;">equipment</td>
+              <td style="padding:8px 12px;">설비</td>
+              <td style="padding:8px 12px;"><span style="background:#f59e0b22;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px;">자산 대장 (Instance)</span></td>
+              <td style="padding:8px 12px;text-align:right;">1,433</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#f59e0b;">device</td>
+              <td style="padding:8px 12px;">장치</td>
+              <td style="padding:8px 12px;"><span style="background:#f59e0b22;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px;">자산 대장 (Instance)</span></td>
+              <td style="padding:8px 12px;text-align:right;">8,407</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#f59e0b;">component</td>
+              <td style="padding:8px 12px;">조립품</td>
+              <td style="padding:8px 12px;"><span style="background:#f59e0b22;color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px;">자산 대장 (Instance)</span></td>
+              <td style="padding:8px 12px;text-align:right;">51,527</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#4f8ef7;">measurement</td>
+              <td style="padding:8px 12px;">측정항목</td>
+              <td style="padding:8px 12px;"><span style="background:#4f8ef722;color:#4f8ef7;padding:2px 8px;border-radius:4px;font-size:11px;">표준 사전 (Class)</span></td>
+              <td style="padding:8px 12px;text-align:right;">0</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#4f8ef7;">device_model</td>
+              <td style="padding:8px 12px;">장비모델</td>
+              <td style="padding:8px 12px;"><span style="background:#4f8ef722;color:#4f8ef7;padding:2px 8px;border-radius:4px;font-size:11px;">표준 사전 (Class)</span></td>
+              <td style="padding:8px 12px;text-align:right;">0</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#4f8ef7;">unit</td>
+              <td style="padding:8px 12px;">단위</td>
+              <td style="padding:8px 12px;"><span style="background:#4f8ef722;color:#4f8ef7;padding:2px 8px;border-radius:4px;font-size:11px;">표준 사전 (Class)</span></td>
+              <td style="padding:8px 12px;text-align:right;">0</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#10b981;">naming_convention</td>
+              <td style="padding:8px 12px;">네이밍규칙</td>
+              <td style="padding:8px 12px;"><span style="background:#10b98122;color:#10b981;padding:2px 8px;border-radius:4px;font-size:11px;">표준 사전 (규칙)</span></td>
+              <td style="padding:8px 12px;text-align:right;">4</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="warn-block" style="margin-top:16px;">
+          <strong>현재 문제:</strong> 전체 61,525건 중 대부분이 Instance(고유명사)이며, Class(유형 정의)는 거의 비어있음.
+          ISA-95 원칙에 따라 Instance를 마스터 테이블로 이관하고, Class 용어를 채워야 한다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. ISA-95 적용 범위 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-red"></div>
+        <span class="diagram-card-title">ISA-95 적용 범위</span>
+        <span class="diagram-card-subtitle">IEC 62264 — 기업-제어 시스템 통합 표준</span>
+      </div>
+      <div class="diagram-body">
+        <div class="info-block" style="margin-bottom:20px;">
+          <strong>ISA-95 핵심 원칙: Class vs Instance 분리</strong><br/>
+          <strong>Class</strong> = 유형 정의 (보통명사): "가열로", "온도", "PLC" &rarr; <code>data_standard_term_mt</code><br/>
+          <strong>Instance</strong> = 실제 객체 (고유명사): "FCE_001", "SRL", "PLC_Z1_01" &rarr; 마스터 테이블 (<code>factory_mt</code>, <code>equipment_mt</code>, <code>device_mt</code>)
+        </div>
+        <div class="mermaid">
+graph TB
+  subgraph CLASS["표준 사전 (Class — 보통명사)"]
+    EC["equipment_class<br/>가열로, 압연기, 크레인"]
+    DC["device_class<br/>PLC, 온도센서, 압력계"]
+    MS["measurement<br/>온도, 압력, 유량, 전류"]
+    AC["action<br/>개방, 전진, 운전"]
+    ST["state<br/>가동, 정지, 에러"]
+    VT["value_type<br/>실측, 목표, 상한"]
+  end
+
+  subgraph INSTANCE["자산 대장 (Instance — 고유명사)"]
+    FM["factory_mt<br/>소형압연"]
+    EM["equipment_mt<br/>FCE_001"]
+    DM["device_mt<br/>PLC_Z1_01"]
+    OM["opc_server_node_mt<br/>Zone1.Temp"]
+  end
+
+  EC -->|"standard_term_uid"| FM
+  EC -->|"standard_term_uid"| EM
+  DC -->|"standard_term_uid"| DM
+  MS -->|"data_standard_term_uid"| OM
+
+  style CLASS fill:#1a2035,stroke:#4f8ef7,color:#dde2f0
+  style INSTANCE fill:#1a2035,stroke:#f59e0b,color:#dde2f0
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. ISA-95 설비 계층 매핑 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-purple"></div>
+        <span class="diagram-card-title">ISA-95 설비 계층 매핑</span>
+        <span class="diagram-card-subtitle">Physical Asset Model</span>
+      </div>
+      <div class="diagram-body" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;">
+              <th style="padding:10px 12px;color:var(--accent);">ISA-95 Level</th>
+              <th style="padding:10px 12px;">ISA-95 명칭</th>
+              <th style="padding:10px 12px;">DF-Stream 테이블</th>
+              <th style="padding:10px 12px;">상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 0</td>
+              <td style="padding:8px 12px;">Enterprise</td>
+              <td style="padding:8px 12px;"><code>corp_mt</code> (법인)</td>
+              <td style="padding:8px 12px;"><span style="color:#10b981;">&#10003; 구현됨</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 1</td>
+              <td style="padding:8px 12px;">Site</td>
+              <td style="padding:8px 12px;"><code>business_place_mt</code> (사업장)</td>
+              <td style="padding:8px 12px;"><span style="color:#10b981;">&#10003; 구현됨</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 2</td>
+              <td style="padding:8px 12px;">Area</td>
+              <td style="padding:8px 12px;"><span style="color:var(--text3);">(없음)</span></td>
+              <td style="padding:8px 12px;"><span style="color:#f76f6f;">&#10007; 미구현</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 3</td>
+              <td style="padding:8px 12px;">Production Line</td>
+              <td style="padding:8px 12px;"><code>factory_mt</code> (공장)</td>
+              <td style="padding:8px 12px;"><span style="color:#f59e0b;">&#9888; 부분</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 4</td>
+              <td style="padding:8px 12px;">Work Cell</td>
+              <td style="padding:8px 12px;"><code>equipment_mt</code> (최상위)</td>
+              <td style="padding:8px 12px;"><span style="color:#f59e0b;">&#9888; 스키마만</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 5</td>
+              <td style="padding:8px 12px;">Equipment</td>
+              <td style="padding:8px 12px;"><code>equipment_mt</code> (하위)</td>
+              <td style="padding:8px 12px;"><span style="color:#f59e0b;">&#9888; 스키마만</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 6</td>
+              <td style="padding:8px 12px;">Equipment Module</td>
+              <td style="padding:8px 12px;"><code>equipment_mt</code> / <code>device_mt</code></td>
+              <td style="padding:8px 12px;"><span style="color:#f59e0b;">&#9888; 스키마만</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">Level 7</td>
+              <td style="padding:8px 12px;">Control Module</td>
+              <td style="padding:8px 12px;"><code>opc_server_node_mt</code></td>
+              <td style="padding:8px 12px;"><span style="color:#f59e0b;">&#9888; 스키마만</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 7. ISA-95 4대 리소스 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-green"></div>
+        <span class="diagram-card-title">ISA-95 4대 리소스 대응</span>
+        <span class="diagram-card-subtitle">Equipment / Material / Personnel / Physical Asset</span>
+      </div>
+      <div class="diagram-body" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;">
+              <th style="padding:10px 12px;color:var(--accent);">ISA-95 리소스</th>
+              <th style="padding:10px 12px;">DF-Stream 대응</th>
+              <th style="padding:10px 12px;">적용 범위</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#4f8ef7;">Equipment</td>
+              <td style="padding:8px 12px;"><code>equipment_mt</code> + <code>device_mt</code> + <code>equipment_device_jt</code></td>
+              <td style="padding:8px 12px;"><span style="color:#10b981;">&#10003; 핵심 적용 대상</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:#4f8ef7;">Physical Asset</td>
+              <td style="padding:8px 12px;"><code>opc_server_mt</code> + <code>opc_server_node_mt</code></td>
+              <td style="padding:8px 12px;"><span style="color:#10b981;">&#10003; OPC 자산 관리</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:var(--text3);">Material</td>
+              <td style="padding:8px 12px;"><span style="color:var(--text3);">(없음)</span></td>
+              <td style="padding:8px 12px;"><span style="color:#f76f6f;">&#10007; 범위 외 &mdash; MES 담당</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;color:var(--text3);">Personnel</td>
+              <td style="padding:8px 12px;"><code>df_app.users</code> (인증만)</td>
+              <td style="padding:8px 12px;"><span style="color:#f76f6f;">&#10007; 범위 외 &mdash; RBAC만</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="info-block" style="margin-top:16px;">
+          DF-Stream은 <strong>설비 계층 + 측정 표준화 + 제어 시스템 통합</strong> 영역에 집중한다.
+          Material/Product/Personnel은 MES 시스템이 담당하며, DF-Stream은 데이터 연동 인터페이스를 제공한다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. ISA-95 적합도 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-teal"></div>
+        <span class="diagram-card-title">ISA-95 적합도 현황</span>
+        <span class="diagram-card-subtitle">현재 vs 목표 (Phase 4 후)</span>
+      </div>
+      <div class="diagram-body" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;">
+              <th style="padding:10px 12px;color:var(--accent);">영역</th>
+              <th style="padding:10px 12px;text-align:center;">현재</th>
+              <th style="padding:10px 12px;text-align:center;">목표</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">설비 계층 (Level 0~7)</td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#f59e0b33;border-radius:4px;padding:2px 0;width:60%;margin:0 auto;text-align:center;color:#f59e0b;font-size:12px;font-weight:600;">60%</div>
+              </td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#10b98133;border-radius:4px;padding:2px 0;width:80%;margin:0 auto;text-align:center;color:#10b981;font-size:12px;font-weight:600;">80%</div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">Equipment Class/Instance</td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#f76f6f33;border-radius:4px;padding:2px 0;width:30%;margin:0 auto;text-align:center;color:#f76f6f;font-size:12px;font-weight:600;">30%</div>
+              </td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#10b98133;border-radius:4px;padding:2px 0;width:90%;margin:0 auto;text-align:center;color:#10b981;font-size:12px;font-weight:600;">90%</div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">Measurement Definition</td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#f59e0b33;border-radius:4px;padding:2px 0;width:70%;margin:0 auto;text-align:center;color:#f59e0b;font-size:12px;font-weight:600;">70%</div>
+              </td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#10b98133;border-radius:4px;padding:2px 0;width:95%;margin:0 auto;text-align:center;color:#10b981;font-size:12px;font-weight:600;">95%</div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">Control System Integration</td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#10b98133;border-radius:4px;padding:2px 0;width:80%;margin:0 auto;text-align:center;color:#10b981;font-size:12px;font-weight:600;">80%</div>
+              </td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#10b98133;border-radius:4px;padding:2px 0;width:85%;margin:0 auto;text-align:center;color:#10b981;font-size:12px;font-weight:600;">85%</div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">Data Standardization</td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#f59e0b33;border-radius:4px;padding:2px 0;width:60%;margin:0 auto;text-align:center;color:#f59e0b;font-size:12px;font-weight:600;">60%</div>
+              </td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#10b98133;border-radius:4px;padding:2px 0;width:90%;margin:0 auto;text-align:center;color:#10b981;font-size:12px;font-weight:600;">90%</div>
+              </td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;font-weight:600;">종합</td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#f59e0b33;border-radius:4px;padding:2px 0;width:44%;margin:0 auto;text-align:center;color:#f59e0b;font-size:12px;font-weight:600;">44%</div>
+              </td>
+              <td style="padding:8px 12px;text-align:center;">
+                <div style="background:#f59e0b33;border-radius:4px;padding:2px 0;width:64%;margin:0 auto;text-align:center;color:#f59e0b;font-size:12px;font-weight:600;">64%</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 9. DB 스키마 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-blue"></div>
+        <span class="diagram-card-title">표준 사전 DB 스키마 (7개 테이블)</span>
+        <span class="diagram-card-subtitle">df_package 스키마</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+erDiagram
+    data_standard_category_ct {
+        bigint category_uid PK
+        bigint upper_category_uid FK "NULL"
+        varchar category_cd "NOT NULL UNIQUE"
+        varchar category_nm "NOT NULL"
+        varchar category_en "NULL"
+        integer level "DEFAULT 1"
+        integer sort_order "DEFAULT 0"
+        boolean use_yn "DEFAULT true"
+    }
+
+    data_standard_term_mt {
+        bigint term_uid PK
+        bigint category_uid FK
+        bigint upper_term_uid FK "NULL"
+        bigint domain_uid FK "NULL"
+        varchar term_cd "NOT NULL"
+        varchar term_nm "NOT NULL"
+        varchar term_en "NULL"
+        varchar abbreviation "NULL"
+        varchar unit "NULL"
+        varchar data_type "NULL"
+        float min_value "NULL"
+        float max_value "NULL"
+        boolean use_yn "DEFAULT true"
+    }
+
+    data_standard_word_mt {
+        bigint word_uid PK
+        varchar word_nm "NOT NULL"
+        varchar word_en "NULL"
+        varchar word_abbr "NULL"
+        boolean use_yn "DEFAULT true"
+    }
+
+    data_standard_domain_mt {
+        bigint domain_uid PK
+        varchar domain_nm "NOT NULL"
+        varchar data_type "NULL"
+        varchar unit "NULL"
+        float min_value "NULL"
+        float max_value "NULL"
+        boolean use_yn "DEFAULT true"
+    }
+
+    data_standard_mapping_rule_mt {
+        bigint rule_uid PK
+        bigint target_term_uid FK
+        varchar source_type "NOT NULL"
+        varchar source_pattern "NOT NULL"
+        boolean is_auto "DEFAULT false"
+    }
+
+    data_standard_term_word_jt {
+        bigint term_uid FK
+        bigint word_uid FK
+        integer word_order "DEFAULT 1"
+    }
+
+    data_standard_term_history_mt {
+        bigint history_uid PK
+        bigint term_uid FK
+        varchar field_nm "NOT NULL"
+        text old_value "NULL"
+        text new_value "NULL"
+        varchar changed_by "NULL"
+        timestamptz change_dtm
+    }
+
+    data_standard_category_ct ||--o{ data_standard_category_ct : "parent-child"
+    data_standard_category_ct ||--o{ data_standard_term_mt : "classifies"
+    data_standard_term_mt ||--o{ data_standard_term_mt : "parent-child"
+    data_standard_domain_mt ||--o{ data_standard_term_mt : "defines rules"
+    data_standard_term_mt ||--o{ data_standard_term_word_jt : "composed of"
+    data_standard_term_word_jt }o--|| data_standard_word_mt : "word"
+    data_standard_term_mt ||--o{ data_standard_term_history_mt : "change log"
+    data_standard_term_mt ||--o{ data_standard_mapping_rule_mt : "target"
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. v_tag_metadata 뷰와 표준 사전 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-green"></div>
+        <span class="diagram-card-title">v_tag_metadata 뷰 &mdash; 표준 사전 확장 컬럼</span>
+        <span class="diagram-card-subtitle">AI 에이전트 활용 기반</span>
+      </div>
+      <div class="diagram-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #4f8ef7;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">표준 명칭</div>
+            <div style="font-size:14px;font-weight:600;">tag_standard_nm</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: "온도"</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #4f8ef7;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">영문 명칭</div>
+            <div style="font-size:14px;font-weight:600;">tag_standard_en</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: "Temperature"</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #a78bfa;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">분류</div>
+            <div style="font-size:14px;font-weight:600;">tag_standard_category</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: "measurement"</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #10b981;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">단위</div>
+            <div style="font-size:14px;font-weight:600;">tag_unit</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: "&#8451;"</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #f59e0b;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">정상 하한</div>
+            <div style="font-size:14px;font-weight:600;">tag_normal_min</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: -50</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #f59e0b;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">정상 상한</div>
+            <div style="font-size:14px;font-weight:600;">tag_normal_max</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: 500</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #f76f6f;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">설비 유형 (ISA-95)</div>
+            <div style="font-size:14px;font-weight:600;">equipment_class_nm</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: "압연기"</div>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:14px;border-radius:8px;border-top:3px solid #f76f6f;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">장치 유형 (ISA-95)</div>
+            <div style="font-size:14px;font-weight:600;">device_class_nm</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">예: "PLC"</div>
+          </div>
+        </div>
+        <div class="info-block">
+          <strong>AI 이상값 탐지:</strong> 도메인 범위 밖의 값 (<code>value &lt; tag_normal_min OR value &gt; tag_normal_max</code>)은 이상값으로 판단된다.
+          표준 사전의 도메인 정보가 AI 에이전트의 판단 기준이 된다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. 거버넌스 정책 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-orange"></div>
+        <span class="diagram-card-title">거버넌스 정책 요약</span>
+        <span class="diagram-card-subtitle">G-1 ~ G-5</span>
+      </div>
+      <div class="diagram-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:20px;">
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #4f8ef7;">
+            <strong style="color:#4f8ef7;">G-1: 신규 코드 테이블 생성 금지</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">새 <code>_ct</code> 테이블 대신 <code>data_standard_category_ct</code>에 카테고리 추가 &rarr; <code>term_mt</code>에 코드 등록</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #a78bfa;">
+            <strong style="color:#a78bfa;">G-2: 공식 명칭은 표준 사전에서 참조</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">신규 마스터 테이블에 <code>standard_term_uid</code> FK 추가 필수. 공식 정의 = 표준 사전, 표시 이름 = <code>_nm</code> 컬럼</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #10b981;">
+            <strong style="color:#10b981;">G-3: 도메인 규칙으로 데이터 품질 정의</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">측정 태그는 반드시 도메인이 정의된 용어와 연결. 도메인 = 타입 + 단위 + 범위 + 포맷</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #f59e0b;">
+            <strong style="color:#f59e0b;">G-4: AI 접근 계층에 표준 메타데이터 필수</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">AI 뷰(<code>v_tag_metadata</code> 등)는 표준 용어&middot;도메인&middot;분류 정보를 반드시 포함</span>
+          </div>
+          <div style="background:var(--bg-darker,#0d1017);padding:16px;border-radius:8px;border-left:3px solid #f76f6f;">
+            <strong style="color:#f76f6f;">G-5: 외부 코드 매핑은 표준 용어 기준</strong><br/>
+            <span style="font-size:12px;color:var(--text2);">외부 코드 &rarr; <code>mapping_rule</code> &rarr; 표준 용어 &rarr; 내부 엔티티. 직접 매핑 금지</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. 절대 하지 말 것 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-red"></div>
+        <span class="diagram-card-title">절대 하지 말 것</span>
+        <span class="diagram-card-subtitle">Anti-Patterns</span>
+      </div>
+      <div class="diagram-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
+          <div style="background:#f76f6f11;border:1px solid #f76f6f33;border-radius:8px;padding:12px 16px;font-size:13px;color:#f76f6f;">
+            &#10007; 표준 사전을 거치지 않고 새 코드 테이블(<code>_ct</code>) DDL 생성
+          </div>
+          <div style="background:#f76f6f11;border:1px solid #f76f6f33;border-radius:8px;padding:12px 16px;font-size:13px;color:#f76f6f;">
+            &#10007; 표준 용어 없이 태그에 자유 텍스트로 속성 분류
+          </div>
+          <div style="background:#f76f6f11;border:1px solid #f76f6f33;border-radius:8px;padding:12px 16px;font-size:13px;color:#f76f6f;">
+            &#10007; 외부 시스템 코드를 내부 엔티티에 직접 매핑 (표준 용어 경유 필수)
+          </div>
+          <div style="background:#f76f6f11;border:1px solid #f76f6f33;border-radius:8px;padding:12px 16px;font-size:13px;color:#f76f6f;">
+            &#10007; AI 접근 뷰에서 표준 메타데이터(용어&middot;도메인&middot;분류) 누락
+          </div>
+          <div style="background:#f76f6f11;border:1px solid #f76f6f33;border-radius:8px;padding:12px 16px;font-size:13px;color:#f76f6f;">
+            &#10007; Instance(고유명사)를 표준 사전에 등록 (마스터 테이블에 등록해야 함)
+          </div>
+          <div style="background:#f76f6f11;border:1px solid #f76f6f33;border-radius:8px;padding:12px 16px;font-size:13px;color:#f76f6f;">
+            &#10007; 정의 전파 역방향 변경 (엔티티에서 표준 사전 정의 수정 금지)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. 적용 범위와 예외 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-blue"></div>
+        <span class="diagram-card-title">적용 범위와 예외</span>
+        <span class="diagram-card-subtitle">Scope &amp; Exceptions</span>
+      </div>
+      <div class="diagram-body" style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);text-align:left;">
+              <th style="padding:10px 12px;color:var(--accent);">대상</th>
+              <th style="padding:10px 12px;">표준 사전 정책</th>
+              <th style="padding:10px 12px;">비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">공장&middot;설비&middot;공정</td>
+              <td style="padding:8px 12px;"><span style="color:#10b981;">&#10003; G-2 적용</span></td>
+              <td style="padding:8px 12px;font-size:12px;color:var(--text3);">standard_term_uid FK 이미 적용</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">OPC 노드 (태그)</td>
+              <td style="padding:8px 12px;"><span style="color:#10b981;">&#10003; G-2 적용</span></td>
+              <td style="padding:8px 12px;font-size:12px;color:var(--text3);">data_standard_term_uid FK 이미 적용</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">측정항목&middot;동작&middot;상태 코드</td>
+              <td style="padding:8px 12px;"><span style="color:#f59e0b;">&#9888; G-1 전환 중</span></td>
+              <td style="padding:8px 12px;font-size:12px;color:var(--text3);">표준 사전 카테고리로 점진적 통합</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">Kafka 토픽&middot;커넥터</td>
+              <td style="padding:8px 12px;"><span style="color:var(--text3);">&#10007; 적용 제외</span></td>
+              <td style="padding:8px 12px;font-size:12px;color:var(--text3);">인프라 리소스, 명칭 규칙으로 관리</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">Benthos 파이프라인</td>
+              <td style="padding:8px 12px;"><span style="color:var(--text3);">&#10007; 적용 제외</span></td>
+              <td style="padding:8px 12px;font-size:12px;color:var(--text3);">인프라 리소스, 명칭 규칙으로 관리</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);">
+              <td style="padding:8px 12px;">사용자&middot;권한 (df_app)</td>
+              <td style="padding:8px 12px;"><span style="color:var(--text3);">&#10007; 적용 제외</span></td>
+              <td style="padding:8px 12px;font-size:12px;color:var(--text3);">별도 스키마, RBAC으로 관리</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
