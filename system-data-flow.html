@@ -4249,8 +4249,8 @@ graph TD
         <div style="margin-bottom:12px;"><strong style="color:var(--accent);">3계층 구조:</strong></div>
         <div class="mermaid">
 graph LR
-    W["단어 (Word)<br/>온도, 설정, 상한"] --> T["용어 (Term)<br/>온도 (temperature)<br/>measurement > 온도"]
-    T --> D["도메인 (Domain)<br/>FLOAT, ℃, 0~500"]
+    W["단어 Word<br/>온도, 설정, 상한"] --> T["용어 Term<br/>온도 temperature<br/>measurement"]
+    T --> D["도메인 Domain<br/>FLOAT, C, 0~500"]
     T --> REF["참조<br/>factory_mt<br/>equipment_mt<br/>opc_server_node_mt"]
         </div>
         <div style="margin:16px 0 12px;"><strong style="color:var(--accent);">카테고리 현황:</strong></div>
@@ -4574,12 +4574,12 @@ graph LR
       <div class="diagram-body">
         <div class="mermaid">
 graph TB
-  DS["&#128214; 표준 사전<br/>(정의의 원본)"]
-  DS -->|"✅ OK"| F["공장<br/>factory_mt"]
-  DS -->|"✅ OK"| E["설비<br/>equipment_mt"]
-  DS -->|"✅ OK"| D["디바이스<br/>device_mt"]
-  DS -->|"✅ OK"| T["태그<br/>opc_node_mt"]
-  F -.->|"❌ 금지"| DS
+  DS["표준 사전<br/>정의의 원본"]
+  DS -->|"OK"| F["공장<br/>factory_mt"]
+  DS -->|"OK"| E["설비<br/>equipment_mt"]
+  DS -->|"OK"| D["디바이스<br/>device_mt"]
+  DS -->|"OK"| T["태그<br/>opc_node_mt"]
+  F -.->|"금지"| DS
   style DS fill:#1e2a45,stroke:#4f8ef7,color:#dde2f0
         </div>
         <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.15);border-radius:8px;padding:14px 18px;margin-top:16px;">
@@ -4838,7 +4838,7 @@ graph LR
       <div class="diagram-body">
         <div class="mermaid">
 graph TB
-  subgraph Layer1["Layer 1: 단어 (Word)"]
+  subgraph Layer1["1층 : 단어 Word"]
     W1["온도"]
     W2["압력"]
     W3["모터"]
@@ -4847,14 +4847,14 @@ graph TB
     W6["상한"]
   end
 
-  subgraph Layer2["Layer 2: 용어 (Term)"]
+  subgraph Layer2["2층 : 용어 Term"]
     T1["온도<br/>word: 온도"]
     T2["온도_설정값<br/>word: 온도+설정+값"]
     T3["모터_전류<br/>word: 모터+전류"]
   end
 
-  subgraph Layer3["Layer 3: 도메인 (Domain)"]
-    D1["온도_도메인<br/>FLOAT, ℃, -50~2000"]
+  subgraph Layer3["3층 : 도메인 Domain"]
+    D1["온도_도메인<br/>FLOAT, C, -50~2000"]
     D2["압력_도메인<br/>FLOAT, MPa, 0~100"]
     D3["전류_도메인<br/>FLOAT, A, 0~1000"]
   end
@@ -4883,12 +4883,12 @@ graph TB
       <div class="diagram-body">
         <div class="mermaid">
 graph TB
-  DS["표준 사전<br/>(Definition Layer)<br/>단어 - 용어 - 도메인"]
+  DS["표준 사전<br/>Definition Layer<br/>단어 - 용어 - 도메인"]
 
   DS -->|"standard_term_uid FK"| F["factory_mt<br/>공장"]
   DS -->|"standard_term_uid FK"| E["equipment_mt<br/>설비"]
   DS -->|"standard_term_uid FK"| DEV["device_mt<br/>디바이스"]
-  DS -->|"data_standard_term_uid FK"| OPC["opc_server_node_mt<br/>OPC 노드 (태그)"]
+  DS -->|"data_standard_term_uid FK"| OPC["opc_server_node_mt<br/>OPC 노드, 태그"]
   DS -.->|"향후 통합"| AT["attribute_type_ct<br/>속성 유형 코드"]
 
   OPC --> V["v_tag_metadata<br/>태그 메타데이터 뷰"]
