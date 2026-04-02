@@ -5484,6 +5484,12 @@ erDiagram
 </main>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // 숨겨진 sub-tab-panel 안의 mermaid 원본 저장 후 초기 렌더링 제외
+    document.querySelectorAll('.sub-tab-panel:not(.active) .mermaid').forEach(el => {
+      el.setAttribute('data-original', el.innerHTML);
+      el.classList.add('mermaid-deferred');
+      el.classList.remove('mermaid');
+    });
     mermaid.initialize({
       startOnLoad: true,
       theme: 'dark',
@@ -5532,7 +5538,18 @@ erDiagram
     section.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
     section.querySelectorAll('.sub-tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById(panelId).classList.add('active');
+    const panel = document.getElementById(panelId);
+    panel.classList.add('active');
+    // deferred mermaid를 복원하여 렌더링
+    const deferred = panel.querySelectorAll('.mermaid-deferred');
+    if (deferred.length > 0) {
+      deferred.forEach(el => {
+        el.innerHTML = el.getAttribute('data-original');
+        el.classList.remove('mermaid-deferred');
+        el.classList.add('mermaid');
+      });
+      try { mermaid.run({ nodes: panel.querySelectorAll('.mermaid') }); } catch(e) {}
+    }
   }
 </script>
 </body>
