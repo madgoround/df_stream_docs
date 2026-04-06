@@ -4151,8 +4151,7 @@ graph TB
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">OPC UA 노드</td><td style="padding:10px 12px;">OPC 서버 내 트리 구조의 개별 항목 (Channel/Device/Tag)</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">노드 컬렉션</td><td style="padding:10px 12px;">수집 대상 태그를 묶은 선택 그룹</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">표준 사전</td><td style="padding:10px 12px;">모든 명칭과 정의의 원본 (의미론 SSoT)</td></tr>
-            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">값 도메인 (Value Domain)</td><td style="padding:10px 12px;">ISA-95 Property Definition. 표준 용어에 부여하는 데이터 규칙 (타입/단위/범위)</td></tr>
-            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">업무 도메인 (Business Domain)</td><td style="padding:10px 12px;">ISA-95 Functional Area. 용어가 속하는 업무 영역 (생산/설비/품질)</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">도메인 (Domain)</td><td style="padding:10px 12px;">ISA-95 Property Definition. 표준 용어에 부여하는 데이터 규칙 (타입/단위/범위)</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">데이터셋 (Dataset)</td><td style="padding:10px 12px;">수집 파이프라인이 다루는 데이터의 논리적 단위</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">Kafka 클러스터</td><td style="padding:10px 12px;">스트림 데이터의 메시지 브로커</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">소스 시스템</td><td style="padding:10px 12px;">데이터의 원천 시스템 (KEP, MES, ERP 등)</td></tr>
@@ -4191,7 +4190,7 @@ device_mt / device_address_mt ← 물리 연결 (PLC, 메모리 주소)
 equipment_device_jt → equipment_mt ← 설비 매핑
 factory_mt → business_place_mt → corp_mt ← 조직 계층
 data_standard_term_mt       ← 표준 용어 참조 ("온도")
-data_standard_value_domain_mt ← 값 도메인 규칙 (℃, 0~500)
+data_standard_domain_mt ← 도메인 규칙 (℃, 0~500)
 opc_node_collection_jt      ← 수집 그룹
 kafka_topic_opc_server_tag_jt ← Kafka 토픽 매핑
 v_tag_metadata              ← 통합 조회 뷰</pre>
@@ -4298,8 +4297,7 @@ graph TD
         <div class="mermaid">
 graph LR
     W["단어 Word<br/>온도, 설정, 상한"] --> T["용어 Term<br/>온도 temperature<br/>measurement"]
-    T --> VD["값 도메인 Value Domain<br/>FLOAT, ℃, 0~500"]
-    T --> BD["업무 도메인 Business Domain<br/>생산, 설비, 품질"]
+    T --> VD["도메인 Domain<br/>FLOAT, ℃, 0~500"]
     T --> REF["참조<br/>factory_mt<br/>equipment_mt<br/>opc_server_node_mt"]
         </div>
         <div style="margin:16px 0 12px;"><strong style="color:var(--accent);">카테고리 현황:</strong></div>
@@ -4317,17 +4315,17 @@ graph LR
       </div>
     </div>
 
-    <!-- 6. 값 도메인 + 업무 도메인 -->
+    <!-- 6. 도메인 -->
     <div class="diagram-card" style="margin-top:24px">
       <div class="diagram-card-header">
         <div class="dot dot-green"></div>
-        <span class="diagram-card-title">6. 도메인 (3축 분류)</span>
-        <span class="diagram-card-subtitle">값 도메인 (How) + 업무 도메인 (Where) + 카테고리 (What)</span>
+        <span class="diagram-card-title">6. 도메인 (Domain)</span>
+        <span class="diagram-card-subtitle">표준 용어에 부여하는 데이터 규칙</span>
       </div>
       <div class="diagram-body">
-        <p style="margin:0 0 12px;line-height:1.7;"><strong>값 도메인 (Value Domain)</strong> — ISA-95 Property Definition. 데이터 규칙을 정의하여 AI가 "이 값이 정상인가?"를 판단하는 기준.</p>
+        <p style="margin:0 0 12px;line-height:1.7;"><strong>도메인 (Domain)</strong> — ISA-95 Property Definition. 데이터 규칙을 정의하여 AI가 "이 값이 정상인가?"를 판단하는 기준.</p>
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">값 도메인</th><th style="padding:8px;">타입</th><th style="padding:8px;">단위</th><th style="padding:8px;">범위</th></tr></thead>
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">도메인</th><th style="padding:8px;">타입</th><th style="padding:8px;">단위</th><th style="padding:8px;">범위</th></tr></thead>
           <tbody>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">온도_도메인</td><td style="padding:8px;">FLOAT</td><td style="padding:8px;">℃</td><td style="padding:8px;">-50 ~ 500</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">압력_도메인</td><td style="padding:8px;">FLOAT</td><td style="padding:8px;">MPa</td><td style="padding:8px;">0 ~ 100</td></tr>
@@ -4337,21 +4335,6 @@ graph LR
           </tbody>
         </table>
         <p style="margin:12px 0 0;font-size:12px;color:#888;">외 55건: 전압, 전력, 속도, 회전수, 진동, 토크, 주파수, 길이, 두께, 폭, 중량, 레벨, 카운트, 철강 특화 도메인 등</p>
-        <div style="margin:20px 0 12px;border-top:1px solid var(--border-light,#1e2540);padding-top:16px;">
-          <p style="margin:0 0 12px;line-height:1.7;"><strong>업무 도메인 (Business Domain)</strong> — ISA-95 Functional Area. 용어가 속하는 업무 영역을 계층적으로 분류.</p>
-          <table style="width:100%;border-collapse:collapse;font-size:13px;">
-            <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">코드</th><th style="padding:8px;">한글</th><th style="padding:8px;">영문</th><th style="padding:8px;">범위</th></tr></thead>
-            <tbody>
-              <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">PRODUCTION</td><td style="padding:8px;">생산</td><td style="padding:8px;">Production</td><td style="padding:8px;">전사 공통</td></tr>
-              <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">EQUIPMENT</td><td style="padding:8px;">설비/보전</td><td style="padding:8px;">Equipment/Maintenance</td><td style="padding:8px;">전사 공통</td></tr>
-              <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">QUALITY</td><td style="padding:8px;">품질</td><td style="padding:8px;">Quality</td><td style="padding:8px;">전사 공통</td></tr>
-              <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">INVENTORY</td><td style="padding:8px;">재고</td><td style="padding:8px;">Inventory</td><td style="padding:8px;">전사 공통</td></tr>
-              <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">ENERGY</td><td style="padding:8px;">에너지</td><td style="padding:8px;">Energy</td><td style="padding:8px;">전사 공통</td></tr>
-              <tr><td style="padding:8px;">SAFETY</td><td style="padding:8px;">안전</td><td style="padding:8px;">Safety</td><td style="padding:8px;">전사 공통</td></tr>
-            </tbody>
-          </table>
-          <p style="margin:12px 0 0;font-size:12px;color:#888;">최상위=전사 공통(business_place_uid=NULL), 하위 도메인은 사업장별 특화 가능</p>
-        </div>
       </div>
     </div>
 
@@ -4505,7 +4488,7 @@ graph LR
       <div class="diagram-card-header">
         <div class="dot dot-blue"></div>
         <span class="diagram-card-title">3계층 구조: 레고 블록처럼 조합한다</span>
-        <span class="diagram-card-subtitle">Word &rarr; Term &rarr; Value Domain + Business Domain</span>
+        <span class="diagram-card-subtitle">Word &rarr; Term &rarr; Domain</span>
       </div>
       <div class="diagram-body">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
@@ -4533,7 +4516,7 @@ graph LR
           </div>
           <!-- 3층 -->
           <div style="background:var(--bg-darker,#0d1017);border-radius:10px;border-top:3px solid #10b981;padding:16px;">
-            <div style="font-size:11px;color:#10b981;font-weight:600;">3층: 값 도메인 (Value Domain)</div>
+            <div style="font-size:11px;color:#10b981;font-weight:600;">3층: 도메인 (Domain)</div>
             <div style="font-size:13px;margin-top:6px;">"데이터가 어떤 형태?"</div>
             <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
               <div style="font-size:12px;">온도: <span style="color:#10b981;">FLOAT &middot; &#8451; &middot; -50~2000</span></div>
@@ -4893,7 +4876,7 @@ graph LR
     <div class="diagram-card">
       <div class="diagram-card-header">
         <div class="dot dot-purple"></div>
-        <span class="diagram-card-title">3계층 구조: 단어 → 용어 → 값 도메인</span>
+        <span class="diagram-card-title">3계층 구조: 단어 → 용어 → 도메인</span>
         <span class="diagram-card-subtitle">NIA 데이터 표준화 가이드 기반</span>
       </div>
       <div class="diagram-body">
@@ -4914,7 +4897,7 @@ graph TB
     T3["모터_전류<br/>word: 모터+전류"]
   end
 
-  subgraph Layer3["3층 : 값 도메인 Value Domain"]
+  subgraph Layer3["3층 : 도메인 Domain"]
     D1["온도_도메인<br/>FLOAT, C, -50~2000"]
     D2["압력_도메인<br/>FLOAT, MPa, 0~100"]
     D3["전류_도메인<br/>FLOAT, A, 0~1000"]
@@ -4944,7 +4927,7 @@ graph TB
       <div class="diagram-body">
         <div class="mermaid">
 graph TB
-  DS["표준 사전<br/>Definition Layer<br/>단어 - 용어 - 값 도메인 - 업무 도메인"]
+  DS["표준 사전<br/>Definition Layer<br/>단어 - 용어 - 도메인"]
 
   DS -->|"standard_term_uid FK"| F["factory_mt<br/>공장"]
   DS -->|"standard_term_uid FK"| E["equipment_mt<br/>설비"]
@@ -5277,7 +5260,7 @@ graph TB
     <div class="diagram-card">
       <div class="diagram-card-header">
         <div class="dot dot-blue"></div>
-        <span class="diagram-card-title">표준 사전 DB 스키마 (9개 테이블)</span>
+        <span class="diagram-card-title">표준 사전 DB 스키마 (7개 테이블)</span>
         <span class="diagram-card-subtitle">df_package 스키마</span>
       </div>
       <div class="diagram-body">
@@ -5302,7 +5285,7 @@ erDiagram
         bigint term_uid PK
         bigint category_uid FK
         bigint upper_term_uid FK "NULL - 자기참조(계층)"
-        bigint value_domain_uid FK "NULL"
+        bigint domain_uid FK "NULL"
         varchar term_cd "NOT NULL"
         varchar term_nm "NOT NULL"
         varchar term_en "NULL"
@@ -5329,9 +5312,10 @@ erDiagram
         boolean use_yn "DEFAULT true"
     }
 
-    data_standard_value_domain_mt {
-        bigint value_domain_uid PK
-        varchar value_domain_nm "NOT NULL UNIQUE"
+    data_standard_domain_mt {
+        bigint domain_uid PK
+        varchar domain_group "NULL (MEASUREMENT/CODE/NUMBER/AMOUNT/TEXT/DATETIME)"
+        varchar domain_nm "NOT NULL UNIQUE"
         varchar data_type "NULL"
         integer data_length "NULL"
         varchar unit "NULL"
@@ -5345,19 +5329,6 @@ erDiagram
         boolean use_yn "DEFAULT true"
     }
 
-    data_standard_business_domain_mt {
-        bigint business_domain_uid PK
-        varchar code "NOT NULL UNIQUE"
-        varchar name "NOT NULL"
-        varchar name_en "NULL"
-        text description "NULL"
-        bigint parent_uid FK "NULL - 자기참조"
-        bigint business_place_uid FK "NULL - 전사공통"
-        integer sort_order "DEFAULT 0"
-        timestamptz create_dtm
-        timestamptz change_dtm
-        boolean use_yn "DEFAULT true"
-    }
 
     data_standard_mapping_rule_mt {
         bigint rule_uid PK
@@ -5392,8 +5363,7 @@ erDiagram
     data_standard_category_ct ||--o{ data_standard_category_ct : "parent-child"
     data_standard_category_ct ||--o{ data_standard_term_mt : "classifies"
     data_standard_term_mt ||--o{ data_standard_term_mt : "parent-child"
-    data_standard_value_domain_mt ||--o{ data_standard_term_mt : "value rules"
-    data_standard_business_domain_mt ||--o{ data_standard_business_domain_mt : "parent-child"
+    data_standard_domain_mt ||--o{ data_standard_term_mt : "defines rules"
     data_standard_term_mt ||--o{ data_standard_term_word_jt : "composed of"
     data_standard_term_word_jt }o--|| data_standard_word_mt : "word"
     data_standard_term_mt ||--o{ data_standard_term_history_mt : "change log"
