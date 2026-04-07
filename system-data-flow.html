@@ -4154,7 +4154,7 @@ graph TB
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">OPC UA 노드</td><td style="padding:10px 12px;">OPC 서버 내 트리 구조의 개별 항목 (Channel/Device/Tag)</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">노드 컬렉션</td><td style="padding:10px 12px;">수집 대상 태그를 묶은 선택 그룹</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">표준 사전</td><td style="padding:10px 12px;">모든 명칭과 정의의 원본 (의미론 SSoT)</td></tr>
-            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">도메인 (Domain)</td><td style="padding:10px 12px;">ISA-95 Property Definition. 표준 용어에 부여하는 데이터 규칙 (타입/단위/범위)</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">도메인 (Domain)</td><td style="padding:10px 12px;">ISA-95 Property Definition. domain_group으로 구분: MEASUREMENT(센서 값 규칙) / DATABASE(DB 컬럼 규칙)</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">데이터셋 (Dataset)</td><td style="padding:10px 12px;">수집 파이프라인이 다루는 데이터의 논리적 단위</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">Kafka 클러스터</td><td style="padding:10px 12px;">스트림 데이터의 메시지 브로커</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:10px 12px;font-weight:600;color:var(--accent);">소스 시스템</td><td style="padding:10px 12px;">데이터의 원천 시스템 (KEP, MES, ERP 등)</td></tr>
@@ -4326,18 +4326,28 @@ graph LR
         <span class="diagram-card-subtitle">표준 용어에 부여하는 데이터 규칙</span>
       </div>
       <div class="diagram-body">
-        <p style="margin:0 0 12px;line-height:1.7;"><strong>도메인 (Domain)</strong> — ISA-95 Property Definition. 데이터 규칙을 정의하여 AI가 "이 값이 정상인가?"를 판단하는 기준.</p>
+        <p style="margin:0 0 12px;line-height:1.7;"><strong>도메인 (Domain)</strong> — ISA-95 Property Definition. 데이터 규칙을 정의하여 AI가 "이 값이 정상인가?"를 판단하는 기준. <code>domain_group</code>으로 측정(MEASUREMENT)과 DB(DATABASE) 도메인을 구분한다.</p>
+        <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#10b981;">MEASUREMENT (측정 도메인) — 센서/태그 값 규칙</p>
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
           <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">도메인</th><th style="padding:8px;">타입</th><th style="padding:8px;">단위</th><th style="padding:8px;">범위</th></tr></thead>
           <tbody>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">온도_도메인</td><td style="padding:8px;">FLOAT</td><td style="padding:8px;">℃</td><td style="padding:8px;">-50 ~ 500</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">압력_도메인</td><td style="padding:8px;">FLOAT</td><td style="padding:8px;">MPa</td><td style="padding:8px;">0 ~ 100</td></tr>
             <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">전류_도메인</td><td style="padding:8px;">FLOAT</td><td style="padding:8px;">A</td><td style="padding:8px;">0 ~ 10,000</td></tr>
-            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">유량_도메인</td><td style="padding:8px;">FLOAT</td><td style="padding:8px;">m³/h</td><td style="padding:8px;">0 ~ 100,000</td></tr>
             <tr><td style="padding:8px;">부울_도메인</td><td style="padding:8px;">BOOLEAN</td><td style="padding:8px;">-</td><td style="padding:8px;">-</td></tr>
           </tbody>
         </table>
-        <p style="margin:12px 0 0;font-size:12px;color:#888;">외 55건: 전압, 전력, 속도, 회전수, 진동, 토크, 주파수, 길이, 두께, 폭, 중량, 레벨, 카운트, 철강 특화 도메인 등</p>
+        <p style="margin:8px 0;font-size:12px;color:#888;">외 54건: 전압, 전력, 유량, 속도, 회전수, 진동, 토크, 길이, 두께, 폭, 중량, 철강 특화 도메인 등</p>
+        <p style="margin:12px 0 8px;font-size:12px;font-weight:600;color:#4f8ef7;">DATABASE (DB 도메인) — 테이블 컬럼 설계 규칙</p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">도메인</th><th style="padding:8px;">타입</th><th style="padding:8px;">NULL</th><th style="padding:8px;">기본값</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">UID_도메인</td><td style="padding:8px;">BIGINT</td><td style="padding:8px;">NOT NULL</td><td style="padding:8px;">-</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">명칭_도메인</td><td style="padding:8px;">VARCHAR(100)</td><td style="padding:8px;">NOT NULL</td><td style="padding:8px;">-</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">일시_도메인</td><td style="padding:8px;">TIMESTAMPTZ</td><td style="padding:8px;">NOT NULL</td><td style="padding:8px;">now()</td></tr>
+            <tr><td style="padding:8px;">사용여부_도메인</td><td style="padding:8px;">BOOLEAN</td><td style="padding:8px;">NOT NULL</td><td style="padding:8px;">true</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -5317,15 +5327,19 @@ erDiagram
 
     data_standard_domain_mt {
         bigint domain_uid PK
-        varchar domain_group "NULL (MEASUREMENT/CODE/NUMBER/AMOUNT/TEXT/DATETIME)"
+        varchar domain_group "NULL (MEASUREMENT/DATABASE/CODE/IDENTIFIER)"
         varchar domain_nm "NOT NULL UNIQUE"
         varchar data_type "NULL"
         integer data_length "NULL"
-        varchar unit "NULL"
-        float min_value "NULL"
-        float max_value "NULL"
+        varchar unit "NULL (측정 도메인)"
+        float min_value "NULL (측정 도메인)"
+        float max_value "NULL (측정 도메인)"
         varchar format_pattern "NULL"
-        text allowed_values "NULL"
+        text allowed_values "NULL (코드 도메인)"
+        boolean nullable "DEFAULT true (DB 도메인)"
+        varchar default_value "NULL (DB 도메인)"
+        integer precision "NULL (DB 도메인)"
+        integer scale "NULL (DB 도메인)"
         text description "NULL"
         timestamptz create_dtm
         timestamptz change_dtm
