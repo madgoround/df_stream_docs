@@ -3470,6 +3470,9 @@ globalThis["mermaid"] = globalThis.__esbuild_esm_mermaid_nm["mermaid"].default;
     <div class="nav-item" onclick="showSection(12)">
       <span>표준 사전</span><span class="nav-num">13</span>
     </div>
+    <div class="nav-item" onclick="showSection(13)">
+      <span>태그 수집 플로우</span><span class="nav-num">14</span>
+    </div>
   </div>
 </nav>
 
@@ -5549,6 +5552,259 @@ erDiagram
     </div>
 
     </div><!-- /ds-detail -->
+
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- Section 13: 태그 수집 플로우                                      -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <section class="section" id="sec-13" style="display:none">
+    <h2 class="section-title">14. 태그 수집 플로우</h2>
+    <p class="section-desc">태그 1개가 수집되기까지의 업무 프로세스, 필요 데이터, 시스템 플로우를 정의한다.</p>
+
+    <!-- 태그 구성 요소 -->
+    <div class="diagram-card">
+      <div class="diagram-card-header">
+        <div class="dot dot-blue"></div>
+        <span class="diagram-card-title">태그의 4가지 구성 요소</span>
+        <span class="diagram-card-subtitle">식별 + 위치 + 연결 + 의미</span>
+      </div>
+      <div class="diagram-body">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">측면</th><th style="padding:8px;text-align:left;">설명</th><th style="padding:8px;text-align:left;">예시</th><th style="padding:8px;text-align:left;">참조 테이블</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">식별</td><td style="padding:8px;">이름, 전체 경로, 노드 ID</td><td style="padding:8px;font-family:monospace;font-size:12px;">TT_Zone1_PV, Channel1.Device1.TT_Zone1_PV</td><td style="padding:8px;font-size:12px;">opc_server_node_mt</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">위치</td><td style="padding:8px;">법인 &gt; 사업장 &gt; 공장 &gt; 설비 &gt; 디바이스</td><td style="padding:8px;font-size:12px;">CSS &gt; 창원 &gt; SRL &gt; 프레스A &gt; PLC#1</td><td style="padding:8px;font-size:12px;">corp &rarr; business_place &rarr; factory &rarr; equipment &rarr; device</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">연결</td><td style="padding:8px;">PLC 메모리 주소, 데이터 타입, 스캔 주기</td><td style="padding:8px;font-family:monospace;font-size:12px;">%MW100, Float, 1000ms</td><td style="padding:8px;font-size:12px;">device_address_mt, driver_data_type_ct</td></tr>
+            <tr><td style="padding:8px;font-weight:600;color:var(--accent);">의미</td><td style="padding:8px;">표준 용어, 도메인(단위/범위)</td><td style="padding:8px;font-size:12px;">"온도", &#8451;, 0~500</td><td style="padding:8px;font-size:12px;">data_standard_term_mt, domain_mt</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 업무 프로세스 흐름 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-green"></div>
+        <span class="diagram-card-title">업무 프로세스 흐름</span>
+        <span class="diagram-card-subtitle">외부 서비스(요청 관리) &harr; DF-Stream(수집 관리)</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+flowchart TB
+  subgraph EXT["외부 서비스 (요청 관리)"]
+    REQ["태그 수집 요청<br/>(설비팀/연구소)"]
+    PLC["PLC 주소 전달<br/>(설비팀)"]
+    DONE["완료 통보"]
+  end
+
+  subgraph DFS["DF-Stream"]
+    CHECK{"노드 확인<br/>존재하는가?"}
+    STD["메타데이터 표준화<br/>표준 용어 + 도메인 매핑"]
+    VAL["값 확인 요청<br/>라이브 값 읽기 → 요청자 승인"]
+    DEPLOY["수집 배포<br/>스트림에 태그 추가 → 재배포"]
+    OPC["OPC Server 등록<br/>Config API로 태그 추가"]
+    SYNC["DB 동기화<br/>전체 동기화 실행"]
+  end
+
+  REQ --> CHECK
+  CHECK -->|"있음 (Case A)"| STD
+  CHECK -->|"없음 (Case B)"| PLC
+  PLC --> OPC --> SYNC --> STD
+  STD --> VAL
+  VAL -->|"승인"| DEPLOY
+  DEPLOY --> DONE
+
+  style EXT fill:#1a2535,stroke:#4f8ef7,color:#dde2f0
+  style DFS fill:#1a2035,stroke:#10b981,color:#dde2f0
+  style CHECK fill:#f59e0b22,stroke:#f59e0b,color:#f59e0b
+        </div>
+      </div>
+    </div>
+
+    <!-- Case A: 기존 노드 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-teal"></div>
+        <span class="diagram-card-title">Case A: 기존 노드 수집 추가</span>
+        <span class="diagram-card-subtitle">OPC Server에 이미 등록된 태그</span>
+      </div>
+      <div class="diagram-body">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">단계</th><th style="padding:8px;text-align:left;">담당</th><th style="padding:8px;text-align:left;">작업</th><th style="padding:8px;text-align:left;">DF-Stream 기능</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;">A-1</td><td style="padding:8px;">외부 서비스</td><td style="padding:8px;">태그 수집 요청 접수</td><td style="padding:8px;color:#888;">범위 외</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">A-2</td><td style="padding:8px;">데이터 엔지니어</td><td style="padding:8px;">노드 관리에서 태그 검색 → 존재 확인</td><td style="padding:8px;">노드 검색 API</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">A-3</td><td style="padding:8px;">데이터 엔지니어</td><td style="padding:8px;">표준 용어 매핑 + 도메인 설정 + 위치 매핑</td><td style="padding:8px;">표준 사전 매핑 API</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">A-4</td><td style="padding:8px;">데이터 엔지니어 → 요청자</td><td style="padding:8px;">OPC UA 라이브 값 읽기 → 요청자 확인</td><td style="padding:8px;">라이브 값 읽기 API</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">A-5</td><td style="padding:8px;">데이터 엔지니어</td><td style="padding:8px;">스트림에 태그 추가 → 재배포</td><td style="padding:8px;">스트림 태그 추가 API + Quick Deploy</td></tr>
+            <tr><td style="padding:8px;font-weight:600;">A-6</td><td style="padding:8px;">외부 서비스</td><td style="padding:8px;">요청자에게 수집 시작 알림</td><td style="padding:8px;color:#888;">범위 외</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Case B: 신규 노드 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-orange"></div>
+        <span class="diagram-card-title">Case B: 신규 노드 등록 후 수집</span>
+        <span class="diagram-card-subtitle">OPC Server에 없는 태그 — 설비팀 PLC 주소 확인 필요</span>
+      </div>
+      <div class="diagram-body">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">단계</th><th style="padding:8px;text-align:left;">담당</th><th style="padding:8px;text-align:left;">작업</th><th style="padding:8px;text-align:left;">DF-Stream 기능</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;">B-1~2</td><td style="padding:8px;">데이터 엔지니어</td><td style="padding:8px;">노드 검색 → 없음 확인</td><td style="padding:8px;">노드 검색 API</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;">B-3</td><td style="padding:8px;">외부 서비스 → 설비팀</td><td style="padding:8px;">PLC 주소/타입/채널/디바이스 확인</td><td style="padding:8px;color:#888;">범위 외</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">B-4</td><td style="padding:8px;">데이터 엔지니어</td><td style="padding:8px;">KEPServerEX Config API로 태그 추가</td><td style="padding:8px;">OPC Server 태그 등록 API</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">B-5</td><td style="padding:8px;">데이터 엔지니어</td><td style="padding:8px;">전체 동기화 실행</td><td style="padding:8px;">동기화 버튼</td></tr>
+            <tr><td style="padding:8px;font-weight:600;">B-6</td><td style="padding:8px;">-</td><td style="padding:8px;">Case A의 A-3(표준화)부터 진행</td><td style="padding:8px;">→ Case A 합류</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 수집에 필요한 항목 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-purple"></div>
+        <span class="diagram-card-title">수집에 필요한 항목</span>
+        <span class="diagram-card-subtitle">사용자 입력 vs 자동 결정</span>
+      </div>
+      <div class="diagram-body">
+        <div style="margin-bottom:16px;"><strong style="color:var(--accent);">사용자 필수 입력 (3가지)</strong></div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;width:30%;">공장 선택</td><td style="padding:8px;">어느 공장의 태그를 수집할지</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;">태그 선택</td><td style="padding:8px;">수집할 OPC 노드 목록 (노드 브라우저에서 선택)</td></tr>
+            <tr><td style="padding:8px;font-weight:600;">수집 모드</td><td style="padding:8px;">polling / subscribe / both</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-bottom:16px;"><strong style="color:var(--accent);">자동 결정 항목 (9가지)</strong></div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">항목</th><th style="padding:8px;text-align:left;">결정 방법</th><th style="padding:8px;text-align:left;">예시</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">OPC Server</td><td style="padding:8px;">공장 매핑 자동 선택</td><td style="padding:8px;font-family:monospace;font-size:12px;">opc_server_factory_jt</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Stream ID</td><td style="padding:8px;">사업장-공장-소스-seq</td><td style="padding:8px;font-family:monospace;font-size:12px;">changwon-srl-kepserver-01</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Kafka Topic</td><td style="padding:8px;">법인.사업장_공장.tag</td><td style="padding:8px;font-family:monospace;font-size:12px;">css.changwon_srl.tag</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Kafka Cluster</td><td style="padding:8px;">is_default = true</td><td style="padding:8px;font-size:12px;">기본 클러스터</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Benthos Instance</td><td style="padding:8px;">is_default = true</td><td style="padding:8px;font-size:12px;">기본 인스턴스</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">SR Subject</td><td style="padding:8px;">토픽명-value</td><td style="padding:8px;font-family:monospace;font-size:12px;">css.changwon_srl.tag-value</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Sink Connector</td><td style="padding:8px;">토픽명.timescale-ssd</td><td style="padding:8px;font-family:monospace;font-size:12px;">css.changwon_srl.tag.timescale-ssd</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">Sink Schema/Table</td><td style="padding:8px;">사업장_공장.tag_rt</td><td style="padding:8px;font-family:monospace;font-size:12px;">changwon_srl.tag_rt</td></tr>
+            <tr><td style="padding:8px;">Node Collection</td><td style="padding:8px;">스트림 ID로 자동 생성</td><td style="padding:8px;font-size:12px;">내부 관리용</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 배포 시 자동 실행 시퀀스 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-green"></div>
+        <span class="diagram-card-title">배포 시 자동 실행 시퀀스</span>
+        <span class="diagram-card-subtitle">"배포" 버튼 1번 클릭으로 실행되는 12단계</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+sequenceDiagram
+  participant U as 사용자
+  participant API as DF-Stream API
+  participant DB as df_package DB
+  participant B as Benthos
+  participant K as Kafka
+  participant SR as Schema Registry
+  participant KC as Kafka Connect
+  participant SDB as Sink DB
+
+  U->>API: POST /streams/deploy
+  API->>DB: OPC Server/Kafka/Benthos 조회
+  API->>DB: Node Collection 생성 + 스냅샷
+  API->>API: Benthos YAML 생성
+  API->>DB: benthos_pipeline_mt 저장
+  API->>B: PUT /streams/{id} (YAML)
+  B-->>K: OPC UA → Kafka 수집 시작
+  API->>K: 토픽 생성 (없으면)
+  API->>SDB: CREATE SCHEMA + TABLE + Hypertable
+  API->>KC: POST /connectors (JDBC Sink)
+  KC-->>SDB: Kafka → tag_rt 저장 시작
+  API->>DB: deployment_ht + stream_logs
+  API-->>U: { status: "deployed" }
+        </div>
+      </div>
+    </div>
+
+    <!-- 태그 상태 모델 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-blue"></div>
+        <span class="diagram-card-title">태그 상태 모델</span>
+        <span class="diagram-card-subtitle">동기화 → 표준화 → 수집 중</span>
+      </div>
+      <div class="diagram-body">
+        <div class="mermaid">
+stateDiagram-v2
+  [*] --> 동기화됨 : OPC 서버 동기화
+  동기화됨 --> 표준화됨 : 표준 용어 매핑
+  표준화됨 --> 수집중 : 스트림에 추가 + 배포
+  수집중 --> 수집중지 : 스트림 중지
+  수집중지 --> 수집중 : 스트림 재시작
+  수집중 --> 표준화됨 : 스트림에서 제거
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:16px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">상태</th><th style="padding:8px;text-align:left;">판별 조건</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">동기화됨</td><td style="padding:8px;font-size:12px;">opc_server_node_mt에 존재</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">표준화됨</td><td style="padding:8px;font-size:12px;">data_standard_term_uid IS NOT NULL</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;">수집 중</td><td style="padding:8px;font-size:12px;">opc_node_collection_jt에 포함 + 스트림 RUNNING</td></tr>
+            <tr><td style="padding:8px;">수집 중지</td><td style="padding:8px;font-size:12px;">opc_node_collection_jt에 포함 + 스트림 STOPPED</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 역할별 책임 -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-orange"></div>
+        <span class="diagram-card-title">역할별 책임</span>
+      </div>
+      <div class="diagram-body">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">역할</th><th style="padding:8px;text-align:left;">담당 업무</th><th style="padding:8px;text-align:left;">시스템</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;">요청자</td><td style="padding:8px;">태그 수집 요청, 값 확인 승인</td><td style="padding:8px;">외부 서비스</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;">설비팀</td><td style="padding:8px;">PLC 주소 확인, 센서 설치 정보 제공</td><td style="padding:8px;">외부 서비스</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-weight:600;color:var(--accent);">데이터 엔지니어</td><td style="padding:8px;">노드 확인, OPC 등록, 표준화, 값 확인 요청, 수집 배포</td><td style="padding:8px;">DF-Stream</td></tr>
+            <tr><td style="padding:8px;font-weight:600;">외부 서비스</td><td style="padding:8px;">요청 접수, 상태 추적, 완료 통보</td><td style="padding:8px;">별도 시스템</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 외부 연동 API -->
+    <div class="diagram-card" style="margin-top:24px">
+      <div class="diagram-card-header">
+        <div class="dot dot-purple"></div>
+        <span class="diagram-card-title">외부 서비스 연동 API (구현 계획)</span>
+        <span class="diagram-card-subtitle">외부 요청 관리 시스템이 호출하는 DF-Stream API</span>
+      </div>
+      <div class="diagram-body">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr style="border-bottom:1px solid var(--border);"><th style="padding:8px;text-align:left;">API</th><th style="padding:8px;text-align:left;">용도</th><th style="padding:8px;text-align:left;">호출 시점</th></tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-family:monospace;font-size:12px;">GET /api/tags/search</td><td style="padding:8px;">노드 존재 여부 확인</td><td style="padding:8px;">요청 접수 시</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-family:monospace;font-size:12px;">GET /api/tags/:uid/live-value</td><td style="padding:8px;">현재 값 읽기 (요청자 확인용)</td><td style="padding:8px;">값 확인 단계</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-family:monospace;font-size:12px;">POST /api/tags/standardize</td><td style="padding:8px;">일괄 표준 매핑</td><td style="padding:8px;">표준화 단계</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-family:monospace;font-size:12px;">POST /api/streams/:id/tags</td><td style="padding:8px;">기존 스트림에 태그 추가 → 재배포</td><td style="padding:8px;">수집 배포 단계</td></tr>
+            <tr style="border-bottom:1px solid var(--border-light,#1e2540);"><td style="padding:8px;font-family:monospace;font-size:12px;">GET /api/tags/:uid/collection-status</td><td style="padding:8px;">태그 수집 상태 조회</td><td style="padding:8px;">상태 확인 시</td></tr>
+            <tr><td style="padding:8px;font-family:monospace;font-size:12px;">POST /api/opc-servers/:uid/tags</td><td style="padding:8px;">OPC Server에 태그 등록 (Case B)</td><td style="padding:8px;">신규 노드 등록</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
   </section>
 
